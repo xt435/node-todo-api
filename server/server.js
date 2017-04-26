@@ -1,5 +1,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+var {ObjectID} = require('mongodb');
+
 
 var {mongoos} = require('./db/mongoose');
 var {Todo} = require('./models/todo');
@@ -28,16 +30,27 @@ app.post('/todos', (req, res) => {
 });
 
 app.get('/todos', (req, res) => {
+  var id = req.param.id;
+
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send();
+  }
+
   Todo.find().then((todos) => {
+    if (!todos) {
+      return res.status(404).send();
+    }
     res.send({todos});
-  }, (e) => {
-    res.status(400).send(e);
+  }).catch((e) => {
+    res.status(400).send();
   });
 });
 
 app.listen(port, () => {
   console.log(`Started up at port ${port}`);
 });
+
+module.exports = {app};
 
 // var newUser = new User({
 //   email: '  xt435@nyu.edu '
